@@ -1,0 +1,15 @@
+This program generates a repodata dir and xml files for a repository of 
+rpm packages. This repository is compatible with apt/yum/smart/yast and many
+other package-repository-related tools.
+
+run createrepo -h for usage syntax
+
+http://linux.duke.edu/createrepo/
+
+
+THIS IS THE MAINTENANCE BRANCH. SECURITY/CRITICAL BUG FIXES ONLY.
+This branch is available as 'maintenance' in the git repository.
+
+
+
+
