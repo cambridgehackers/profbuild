@@ -1,6 +1,6 @@
 #!/bin/bash -x
 
-SCRIPTDIR=`pwd`/../../profbuild
+SCRIPTDIR="$( cd "$( dirname "$0" )" && pwd )"
 ROOTDIR=`pwd`/sandbox
 TEMPDIR=$ROOTDIR/tmp
 ORIGDIR=`pwd`
