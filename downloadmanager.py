@@ -102,6 +102,7 @@ class RepoDownload:
     def makenew(self):
         c = self.freelist.pop()
         c.url, thislocation, c.cb_function = self.queue.pop(0)
+        c.url = c.url.replace('#', '%23')
         c.filename = self.repobasedir + thislocation
         if self.verbose > 0:
             print('starting', c.url, c.filename)
@@ -110,7 +111,6 @@ class RepoDownload:
         #c.setopt(c.VERBOSE, 1)
         c.setopt(c.SSL_VERIFYPEER, 0)
         c.setopt(c.SSL_VERIFYHOST, 0)
-        #c.setopt(c.ISSUERCERT, 'mobs-repo.europe.nokia.com.pem.cer')
         c.setopt(c.WRITEFUNCTION, c.f.write)
         c.setopt(c.NETRC, c.NETRC_OPTIONAL)
         self.curlm.add_handle(c)

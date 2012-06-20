@@ -229,15 +229,14 @@ class ParseService:
         return self.return_code
 
 def main():
-    mobsbase = customization.mirrordir + 'mobs/'
     repolist = []
-    for file in glob.glob(mobsbase + 'repo/*/*._manifest'):
+    for file in glob.glob(customization.sourcerepo + 'repo/*/*._manifest'):
         masterfh = ParseOBS.ParsePackage(file).filelist
         for masterline in masterfh:
             filename, filesize, objectfile, checksum = masterline.split()
             if filename == '_service':
                 #print("*********************", os.path.basename(file)[:-10])
-                s = ParseService(0, mobsbase + objectfile, False).process(None, repolist, customization.username)
+                s = ParseService(0, customization.sourcerepo + objectfile, False).process(None, repolist, customization.username)
     runq = []
     while queue != []:
         item = queue.pop()

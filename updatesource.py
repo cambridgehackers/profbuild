@@ -23,8 +23,7 @@
 from __future__ import print_function
 import customization, downloadmanager, glob, os, sys, pycurl, xml.parsers.expat, shutil, ParseOBS
 
-#homeurl = "https://api.opensuse.org"
-homeurl = "https://mobs-api.europe.nokia.com"
+homeurl = "https://api.opensuse.org"
 number_connections = 4
 package_attributes = [ ('', '._manifest'), ('/_meta', '._meta'), ('/_attribute', '._attribute')]
 project_list = []
@@ -52,7 +51,7 @@ def verify_package(filename):
     for masterline in masterfh:
         itemname, filesize, itemobjname, checksum = masterline.split()
         #print("pack", itemname, "size", filesize, "new", itemobjname)
-        if int(filesize) > MAX_FILE_SIZE:
+        if False and int(filesize) > MAX_FILE_SIZE:
             print("Warning: longfile, don't download:", itemname, "size", filesize, "new", itemobjname)
             continue
         thispack = {}
@@ -112,6 +111,11 @@ def parse_source_list(dirname, data):
                     if name.startswith(bname):
                         runproj = False
                         break
+                if not runproj:
+                    continue
+                if name not in customization.whitelist:
+                    runproj = False
+                print('PPPPPPPPPPPPPP name', name, runproj)
                 if runproj:
                     project_list.append(name)
     print('parse_source_list', dirname)
@@ -142,15 +146,16 @@ def parse_request(dirname, data):
 
 ###### main ######
 
-def main(dirname):
+def main():
     global downmgr
+    dirname = customization.sourcerepo + 'repo'
     if os.path.exists('./bb.lockfile'):
         os.remove('./bb.lockfile')
     downmgr = downloadmanager.RepoDownload(1, './bb.lockfile', homeurl)
     downmgr.loadfile('/source', dirname + '/_source', process_file)
     if not os.path.exists(dirname + '/_requests'):
         os.makedirs(dirname + '/_requests')
-    downmgr.loadfile('/request', dirname + '/_request', process_file)
+    #downmgr.loadfile('/request', dirname + '/_request', process_file)
     downmgr.process()
     for projectname in os.listdir(dirname):
         if not projectname in project_list:
@@ -167,5 +172,5 @@ def main(dirname):
             os.remove(singlefile)
 
 if __name__ == '__main__':
-    main(os.path.expanduser('~/mirror/mobs/repo'))
+    main()
 

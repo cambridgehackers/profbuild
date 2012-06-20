@@ -1,0 +1,2 @@
+#!/bin/bash -x
+../master.py -p openSUSE:12.1 $* 

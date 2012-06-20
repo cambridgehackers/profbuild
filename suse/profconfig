@@ -1,0 +1,35 @@
+
+import netrc
+
+if not os.path.exists(os.path.expanduser('~/.netrc')):
+    print('Error: the file', os.path.expanduser('~/.netrc'), ' must have an entry for api.opensuse.org')
+    sys.exit(1)
+username = netrc.netrc(os.path.expanduser('~/.netrc')).authenticators('api.opensuse.org')[0]
+
+packagecross = [ ('localrpm', os.getcwd() + '/localrpmdir'),
+    ('SUSE:SLE-10:SDK', 'SUSESDK'), ]
+
+blacklist = ['home:', 'network:', 'isv:',
+    'DISCONTINUED:', 'Debian:', 'GNOME:', 'Java:', 'KDE',
+    'Maemo:', 'Meego', 'Mono', 'Virtualization', 'X11',
+    'YaST', 'deleted', 'devel:', 'openSUSE:Maintenance:', 'security:',
+    'server:', 'spins:', 'systemsmanagement', 'windows:mingw']
+whitelist = ['openSUSE:12.1']
+
+editlist = [ \
+    ('rm', '/opt/meltemi/' + 'armv7hl' + '-meltemi-linux-gnueabi/sys-root'), \
+    ('ln', '/sysroot',                     '/opt/meltemi/' + 'armv7hl' + '-meltemi-linux-gnueabi/sys-root'), \
+    ('ln', '/sysroot/opt/mt',              '/opt/mt'), \
+    ];
+
+scriptdir = os.path.dirname(os.path.abspath('profconfig')) + '/../'
+mirrordir = os.path.expanduser('~/mirror/')
+buildbase = mirrordir + 'suse/repo/'
+repobasedir = 'sandbox/zypp.i586/raw/'
+zypper_info_dir =  'sandbox/zypp/repos.d/'
+
+sourcerepo = mirrordir + 'suse/'
+
+need_unique_chroot = []
+
+added_rpmbuild_environment = 'export PATH=$PATH:/opt/meltemi/bin\n'
