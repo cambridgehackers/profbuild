@@ -31,7 +31,7 @@ static char *checkname[] = {
     "/bin/rm",
     "/bin/kill",
     "/bin/mknod",
-    "/opt/mtz/bin/rpm",
+    "/home/jca/bin/prof-rpm",
     NULL};
 static char *envp[] = {
     "HOME=/root",

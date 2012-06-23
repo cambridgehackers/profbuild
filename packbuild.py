@@ -37,11 +37,11 @@ def expand_all_dependencies(context, atargetarch, archname, adependlist, aload_i
     def zypper_start(arch, arootdir):
         zswitches = '-n -q -q -x'
         zswitches = '-n -q -q'
-        return 'env PATH=/usr/lib/mtz/bin:$PATH ' \
-           + ' LD_LIBRARY_PATH=/usr/lib/mtz/lib:/usr/lib/mtz/lib64: ZYPP_CONF=' \
+        return 'env ' \
+           + ' ZYPP_CONF=' \
            + customization.scripthome + '/' + arch + '.conf ZYPP_LOCKFILE_ROOT=' + arootdir \
            + ' ZYPPER_NOSCRIPTS=1 ZYPP_GLOBAL_PACKAGECACHE=1 "PX_MODULE_BLACKLIST=*" PX_MODULE_WHITELIST=config_envvar ' \
-           + ' /usr/lib/mtz/bin/zypper ' + zswitches + ' --pkg-cache-dir /var/tmp/zypp-packagecache-$USER --root ' + arootdir + ' '
+           + ' zypper ' + zswitches + ' --pkg-cache-dir /var/tmp/zypp-packagecache-$USER --root ' + arootdir + ' '
     context.pconfig.prepare_prjconf_info(atargetarch, archname)
     dependlist = adependlist
     if dependlist is None:
@@ -93,20 +93,21 @@ def expand_all_dependencies(context, atargetarch, archname, adependlist, aload_i
     temprpmdir = ' ' + os.path.dirname(context.rootdir) + '/RPMS/noarch/'
     tzpack = temprpmdir + 'tzdata-1-0.noarch.rpm'
     if not os.path.exists(tzpack.strip()):
-        genutil.runcall('./rebuild_fake.sh', '.')
+         tzpack = ''
+    #    genutil.runcall('./rebuild_fake.sh', '.')
     if context.verbose > 2:
         print('adependlist:', adependlist is not None, aload_in_sysroot)
         print('tstrrt:', tstrrt)
         print('tstrs:', tstrs)
     if adependlist is None:
         if tstrrt != '':
-            tstrrt = tstrrt + temprpmdir + 'notarget-1-0.noarch.rpm' + tzpack
+            #tstrrt = tstrrt + temprpmdir + 'notarget-1-0.noarch.rpm' + tzpack
             print('zypper_start(armv7hl, rootdir in ' + tstrrt)
-            genutil.runcall(zypper_start('armv7hl', context.rootdir) + 'in --noscripts --no-recommends ' + tstrrt, context.rootdir)
+            genutil.runcall(zypper_start('armv7hl', context.rootdir) + 'in --no-recommends ' + tstrrt, context.rootdir)
         if tstrr != '':
-            tstrr = tstrr + ' injection-i586-host-glibc' + temprpmdir + 'busybox-1-0.noarch.rpm'
+            #tstrr = tstrr + ' injection-i586-host-glibc' + temprpmdir + 'busybox-1-0.noarch.rpm'
             print('zypper_start(i586, rootdir in ' + tstrr)
-            genutil.runcall(zypper_start('i586', context.rootdir) + 'in --noscripts --no-recommends ' + tstrr, context.rootdir)
+            genutil.runcall(zypper_start('i586', context.rootdir) + 'in --no-recommends ' + tstrr, context.rootdir)
         if context.verbose > 2:
             print('zypper: ****** bbbbefore moving directories ***', aload_in_sysroot, not os.path.exists(context.rootdir + '/sysroot/etc'))
         if aload_in_sysroot and not os.path.exists(context.rootdir + '/sysroot/etc'):
@@ -121,7 +122,7 @@ def expand_all_dependencies(context, atargetarch, archname, adependlist, aload_i
     if tstrs != '':
         tstrs = tstrs + temprpmdir + 'busybox-1-0.noarch.rpm' + tzpack
         print('zypper_start(armv7hl, /sysroot in ' + tstrs)
-        genutil.runcall(zypper_start('armv7hl', context.rootdir + '/sysroot') + 'in --noscripts --no-recommends ' + tstrs, context.rootdir + '/sysroot')
+        genutil.runcall(zypper_start('armv7hl', context.rootdir + '/sysroot') + 'in --no-recommends ' + tstrs, context.rootdir + '/sysroot')
     #
     # Fixup links in /sysroot/usr/lib that point to /lib.  They should point to /sysroot/lib
     #
@@ -154,7 +155,7 @@ def make_chroot_template(context):
     genutil.init_file_script(context.verbose, customization.file_initial(context.archtype), context.rootdir)
     genutil.runcall('(cd ' + customization.scriptdir + '/template; tar cf - .) | tar xf -', context.rootdir)
     genutil.runcall(customization.sudoprog + ' mknod -m a=rw ' + context.rootdir + '/dev/null c 1 3', '.')
-    rcallbase = '/usr/lib/mtz/bin/rpm --nochroot --quiet ' + genutil.rpmmacros() + ' --root=' + context.rootdir
+    rcallbase = 'prof-rpm --nochroot --quiet ' + genutil.rpmmacros() + ' --root=' + context.rootdir
     #genutil.runcall(rcallbase + ' --initdb', '.')
     #genutil.runcall(rcallbase + '/sysroot --initdb', '.')
     #process required RPMs for generic prjconf template

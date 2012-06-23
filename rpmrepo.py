@@ -134,7 +134,7 @@ class ParseRepomd:
                     print('Start primaryxml:', name, attrs)
                 pass
         elif self.entrytype in ['rpm:requires', 'rpm:provides']:
-            ename = attrs.get('name').encode('latin-1')
+            ename = attrs.get('name') #.encode('latin-1')
             if packagelist[self.curpack].get(self.entrytype) is None:
                 packagelist[self.curpack][self.entrytype] = []
             packagelist[self.curpack][self.entrytype].append(ename)

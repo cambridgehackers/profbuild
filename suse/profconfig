@@ -7,7 +7,7 @@ if not os.path.exists(os.path.expanduser('~/.netrc')):
 username = netrc.netrc(os.path.expanduser('~/.netrc')).authenticators('api.opensuse.org')[0]
 
 packagecross = [ ('localrpm', os.getcwd() + '/localrpmdir'),
-    ('SUSE:SLE-10:SDK', 'SUSESDK'), ]
+    ('openSUSE:12.1', 'SUSE'), ]
 
 blacklist = ['home:', 'network:', 'isv:',
     'DISCONTINUED:', 'Debian:', 'GNOME:', 'Java:', 'KDE',

@@ -25,10 +25,10 @@ pushd $TEMPDIR
 ls $SCRIPTDIR/*.conf | while read CONFFILE
 do
     ARCH=`basename ${CONFFILE%.conf}`
-    ZYPP="env RPM_ROOTDIR=$TEMPDIR/ PATH=/usr/lib/mtz/bin:$PATH \
+    ZYPP="env RPM_ROOTDIR=$TEMPDIR/ \
           ZYPP_CONF=$CONFFILE ZYPP_LOCKFILE_ROOT=$TEMPDIR ZYPPER_NOSCRIPTS=1 ZYPP_GLOBAL_PACKAGECACHE=1 \
           $BLIST PX_MODULE_WHITELIST=config_envvar \
-          /usr/lib/mtz/bin/zypper --pkg-cache-dir /var/tmp/zypp-packagecache-$USER --root $TEMPDIR"
+          zypper --pkg-cache-dir /var/tmp/zypp-packagecache-$USER --root $TEMPDIR"
     $ZYPP addrepo $PARAMFILE
     $ZYPP refresh
     $ZYPP lr
