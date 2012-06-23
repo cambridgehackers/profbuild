@@ -55,6 +55,7 @@ def get_output(acommand):
 # Simple RPM macro expression evaluator used for parsing prjconf files
 #
 def rpm_macro_eval(inputline, archname, atarget_arch):
+    verbose = 0
     parg = ['rpm', rpmmacros()]
     if atarget_arch is not None:
         parg.append('--define=targ_arch ' + atarget_arch)
@@ -66,6 +67,8 @@ def rpm_macro_eval(inputline, archname, atarget_arch):
     prevval = None
     prevop = None
     for toknum, tokval, _, _, _  in tokstream:
+        if verbose > 4:
+            print('rpm_macro_eval parse:', toknum, tokval)
         if toknum == tokenize.NUMBER or toknum == tokenize.STRING:
             pass
         elif toknum == tokenize.NAME:
@@ -88,6 +91,10 @@ def rpm_macro_eval(inputline, archname, atarget_arch):
                 else:
                     tokval = '0'
                 toknum = tokenize.NUMBER
+            elif prevop == '|':
+                pass
+            elif prevop == '%' and toknum == tokenize.NAME:
+                print('opertor%', tokval)
             else:
                 print('unknown operator', prevop)
             prevop = None
