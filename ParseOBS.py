@@ -172,7 +172,7 @@ class ParseProjectMeta:
 #
 class ParseConfig:
     configwords = ['Ignore', 'ExportFilter', 'Keep', 'Runscripts', 'Prefer',
-        'Support', 'Preinstall', 'Patterntype', 'Release', 'Required']
+        'Support', 'Preinstall', 'Patterntype', 'Release', 'Required', 'Optflags', 'CiCntStart', 'Order', 'VMinstall', 'Conflict']
     configdoublewords = ['ExportFilter', 'Substitute']
     def __init__(self, averbose, abuildproject):
         global verbose
