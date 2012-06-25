@@ -17,9 +17,9 @@ blacklist = ['home:', 'network:', 'isv:',
 whitelist = ['openSUSE:12.1']
 
 editlist = [ \
-    ('rm', '/opt/meltemi/' + 'armv7hl' + '-meltemi-linux-gnueabi/sys-root'), \
-    ('ln', '/sysroot',                     '/opt/meltemi/' + 'armv7hl' + '-meltemi-linux-gnueabi/sys-root'), \
-    ('ln', '/sysroot/opt/mt',              '/opt/mt'), \
+    ('rm', '/opt/cross/' + 'armv7hl' + '-cross-linux-gnueabi/sys-root'), \
+    ('ln', '/sysroot',                     '/opt/cross/' + 'armv7hl' + '-cross-linux-gnueabi/sys-root'), \
+    ('ln', '/sysroot/opt/cross',           '/opt/cross'), \
     ];
 
 scriptdir = os.path.dirname(os.path.abspath('profconfig')) + '/../'
@@ -32,4 +32,4 @@ sourcerepo = mirrordir + 'suse/'
 
 need_unique_chroot = []
 
-added_rpmbuild_environment = 'export PATH=$PATH:/opt/meltemi/bin\n'
+added_rpmbuild_environment = 'export PATH=$PATH:/opt/cross/bin\n'
