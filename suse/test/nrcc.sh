@@ -1,0 +1,2 @@
+#
+../../initrepo.sh suse.repo
