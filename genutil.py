@@ -56,7 +56,7 @@ def get_output(acommand):
 #
 def rpm_macro_eval(inputline, archname, atarget_arch):
     verbose = 0
-    parg = ['rpm', rpmmacros()]
+    parg = ['prof-rpm', rpmmacros()]
     if atarget_arch is not None:
         parg.append('--define=targ_arch ' + atarget_arch)
     parg.append('--eval=' + inputline)
@@ -143,7 +143,7 @@ def eval_config(aconfig, atarget_arch, aarch, process_item):
 #
 def spec_requires(verbose, singlefile, aarchtype, atopdir, arcfile):
     retval = ''
-    pcall = ['rpmspec', rpmmacros(), '-q', '--define', '_topdir ' + atopdir, '--srpm']
+    pcall = ['prof-rpmspec', rpmmacros(), '-q', '--define', '_topdir ' + atopdir, '--srpm']
     if arcfile is not None:
         pcall.append(arcfile)
     pcall.append(r'--qf=[%|VERBOSE?{%{REQUIREFLAGS:deptype}: }:{}|%{REQUIRENAME} %{REQUIREFLAGS:depflags} %{REQUIREVERSION}\n]')
@@ -221,7 +221,7 @@ def run_ldconfig(arootdir):
     runcall(customization.sudoprog + ' chmod a+r ' + arootdir + '/var/cache/ldconfig', '.')
 
 def rpm_evaluate(aattribute, aname):
-    return get_output(['rpm', '-qp', '--nodigest', '--nosignature', '--qf', '%{' + aattribute + '}', aname])
+    return get_output(['prof-rpm', '-qp', '--nodigest', '--nosignature', '--qf', '%{' + aattribute + '}', aname])
 
 def write_list(adata, aname):
     fh = open(aname, 'wa')
