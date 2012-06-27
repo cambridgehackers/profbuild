@@ -68,6 +68,9 @@ def expand_all_dependencies(context, atargetarch, archname, adependlist, aload_i
             if name == subitem[0]:
                 #print('subst', name, subitem[1])
                 name = subitem[1]
+        if name.endswith('%{gcc_version}'):
+            print('ignoring dependency:', name)
+            continue
         newlist.append(name)
     if context.verbose > 4:
         print('expand_all_dep', len(newlist))
@@ -90,7 +93,8 @@ def expand_all_dependencies(context, atargetarch, archname, adependlist, aload_i
         else:
             tstrs = tstrs + tname
         context.inprocess.append(rootstring + name)
-    temprpmdir = ' ' + os.path.dirname(context.rootdir) + '/RPMS/noarch/'
+    #temprpmdir = ' ' + os.path.dirname(context.rootdir) + '/RPMS/noarch/'
+    temprpmdir = ' ' + os.getcwd() + '/'
     tzpack = temprpmdir + 'tzdata-1-0.noarch.rpm'
     if not os.path.exists(tzpack.strip()):
          tzpack = ''
@@ -106,6 +110,7 @@ def expand_all_dependencies(context, atargetarch, archname, adependlist, aload_i
             genutil.runcall(zypper_start('armv7hl', context.rootdir) + 'in --no-recommends ' + tstrrt, context.rootdir)
         if tstrr != '':
             #tstrr = tstrr + ' injection-i586-host-glibc' + temprpmdir + 'busybox-1-0.noarch.rpm'
+            tstrr = tstrr + ' qemu ' + temprpmdir + 'noarch/prebuilt-android-ndk-1-0.noarch.rpm ' + temprpmdir + 'noarch/prebuilt-arm-linux-androideabi-1-0.noarch.rpm'
             print('zypper_start(i586, rootdir in ' + tstrr)
             genutil.runcall(zypper_start('i586', context.rootdir) + 'in --no-recommends ' + tstrr, context.rootdir)
         if context.verbose > 2:
@@ -155,12 +160,14 @@ def make_chroot_template(context):
     genutil.init_file_script(context.verbose, customization.file_initial(context.archtype), context.rootdir)
     genutil.runcall('(cd ' + customization.scriptdir + '/template; tar cf - .) | tar xf -', context.rootdir)
     genutil.runcall(customization.sudoprog + ' mknod -m a=rw ' + context.rootdir + '/dev/null c 1 3', '.')
+    genutil.runcall(customization.sudoprog + ' mkfifo ' + context.rootdir + '/dev/log/main', '.')
     rcallbase = 'prof-rpm --nochroot --quiet ' + genutil.rpmmacros() + ' --root=' + context.rootdir
     #genutil.runcall(rcallbase + ' --initdb', '.')
     #genutil.runcall(rcallbase + '/sysroot --initdb', '.')
     #process required RPMs for generic prjconf template
     expand_all_dependencies(context, None, context.hostarch, None, False)
-    expand_all_dependencies(context, context.archtype, context.archtype, None, True)
+    print('temporarily skip generic ARM package install')
+    #expand_all_dependencies(context, context.archtype, context.archtype, None, True)
     genutil.init_file_script(context.verbose, customization.file_edit_list(context.archtype), context.rootdir)
     for singlefile in glob.glob(context.rootdir + '/opt/*/lib/*'):
         snew = os.path.basename(singlefile)

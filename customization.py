@@ -29,13 +29,12 @@ basepackage = 'NRCC'
 packagecross = {'Standard':basepackage + 'STD',
     'Tools':basepackage + 'TOOL'}
 
-blacklist = ['home:', 'crossbuild:', 'deleted', 'susebased',
-    'Archive:', 'Demo:', 'openSUSE.org']
+blacklist = ['home:']
 
 scripthome = os.path.dirname(os.path.abspath(__file__))
 
 sudoprog = 'sudo'
-sudoprog = scripthome + '/really_scary'
+#sudoprog = scripthome + '/really_scary'
 
 bannedpackages = []
 need_unique_chroot = []
@@ -56,7 +55,7 @@ def FORCE_TARGET(packname):
 
 def file_initial(archtype):
     return [ \
-    ('dir', '/dev'), \
+    ('dir', '/dev/log'), \
     ('dir', '/root'), \
     ('dir', '/var/lib/rpm'), \
     ('dir', '/sysroot/var/tmp'), \
@@ -70,13 +69,14 @@ def file_initial(archtype):
     ('dir', '/etc'), \
     ('dir', os.environ['HOME']), \
     ('dir', '/sysroot' + os.environ['HOME']), \
-    ('ln', '/sysroot/usr/include', '/usr/include'), \
-    ('ln', '/sysroot/usr/share',   '/usr/share'), \
+    ('ln', '../sysroot/usr/include', '/usr/include'), \
+    ('ln', '../sysroot/usr/share',   '/usr/share'), \
     ('ln', '../../../zypp.i586',           '/var/cache/zypp'), \
     ('ln', '../../../../zypp.armv7hl',     '/sysroot/var/cache/zypp'), \
     ('ln', '../../zypp',                   '/etc/zypp'), \
     ('ln', os.environ['HOME'] + '/.zypp',  os.environ['HOME'] + '/.zypp'), \
     ('ln', os.environ['HOME'] + '/.zypp',  '/sysroot/' + os.environ['HOME'] + '/.zypp'), \
+    ('ln', '/out/target/product/generic/system', '/system'), \
     ]
 
 def file_edit_list(archtype):
@@ -89,7 +89,7 @@ def file_edit_list(archtype):
     ('dir', '/var/run/dbus'), \
     ('dir', '/usr/local/bin'), \
     ('dir', '/usr/local/lib'), \
-    ('dir', '/opt/mt'), \
+    ('dir', '/opt/cross'), \
     ('touch', '/var/log/wtmp'), \
     ('touch', '/var/run/utmp'), \
     ('touch', '/dev/fd/0'), \
@@ -100,7 +100,7 @@ def file_edit_list(archtype):
     ('mv', '/bin/uname',                   '/bin/uname_real'), \
     ('ln', 'uname_hack',                   '/bin/uname'), \
     ('ln', 'pts/ptmx',                     '/dev/ptmx'), \
-    ('ln', '/sysroot/opt/mt/imports',      '/opt/mt/imports'), \
+    ('ln', '/sysroot/opt/cross/imports',      '/opt/cross/imports'), \
     ('ln', '/usr/bin/moc',                 '/sysroot/usr/bin/moc'), \
     ('ln', '/sysroot/usr/bin/orcc',        '/usr/bin/orcc'), \
     ('ln', '/sysroot/usr/lib/libxml2.so',  '/usr/lib/libxml2.so'), \
@@ -118,8 +118,6 @@ def file_edit_list(archtype):
     ('ln', '/sysroot' ,                    '/usr/gnemul/qemu-arm'), \
     ('ln', 'bash',                         '/bin/sh'), \
     ('ln', '/tmp/pci.ids',                 '/sysroot/usr/share/misc/pci.ids'), \
-    ('ln', '/sysroot/usr/bin/app_text_packager.sh', '/usr/bin/app_text_packager.sh'), \
-    ('ln', '/sysroot/usr/bin/MT_locales.list', '/usr/bin/MT_locales.list'), \
     ]
     for item in editlist:
         e.append(item)
@@ -150,12 +148,10 @@ def editconfig(fconfig, aarch):
             thisconfig.append(line)
     thisconfig.append('%if %{?targ_arch:1}0')
     thisconfig.append('%if %targ_arch==armv7hl')
-    thisconfig.append('Preinstall: injection-armv7hl-host-glibc')
-    thisconfig.append('Prefer: injection-armv7hl-target-glibc injection-armv7hl-target-libgcc injection-armv7hl-target-libstdc++')
+    #thisconfig.append('Preinstall: injection-armv7hl-host-glibc')
     thisconfig.append('%endif')
     thisconfig.append('%if %targ_arch==i586')
-    thisconfig.append('Preinstall: injection-i586-host-glibc')
-    thisconfig.append('Prefer: injection-i586-target-glibc injection-i586-target-libgcc injection-i586-target-libstdc++')
+    #thisconfig.append('Preinstall: injection-i586-host-glibc')
     thisconfig.append('%endif')
     thisconfig.append('%else #targ_arch')
     thisconfig.append('%ifarch %arm')
@@ -163,20 +159,14 @@ def editconfig(fconfig, aarch):
     thisconfig.append('%endif')
     thisconfig.append('%ifarch %ix86')
     thisconfig.append('Prefer: injection-i586-target-glibc injection-i586-target-libstdc++ injection-i586-target-libgcc')
-    #thisconfig.append('#needed for telepathy-qt4, since this contains a .so file, it must be loaded first (to be i586)')
-    thisconfig.append('Support: dbus-python')
-    # python-ply needed by ofono, but for some reason, 'down' doesn't work!!!!!
-    thisconfig.append('Support: python-ply')
     # perl-XML-Parser needed by pulseaudio
     thisconfig.append('Support: perl-XML-Parser')
     thisconfig.append('Support: strace nano')
-    thisconfig.append('Support: libqt5base-devel-tools')
     thisconfig.append('Support: openssl bison cmake')
     thisconfig.append('Support: libcurl4 libxml2-python')
     thisconfig.append('Support: perl-gettext')
     thisconfig.append('Support: python-devel python-distribute python-gobject2 python-pyOpenSSL')
     thisconfig.append('Support: python-Twisted python-zope.interface')
-    thisconfig.append('Support: tp-cita-wrapper')
     thisconfig.append('%endif')
     thisconfig.append('Substitute: libbz2-devel bash')
     thisconfig.append('Substitute: linux-glibc-devel bash')
@@ -184,20 +174,6 @@ def editconfig(fconfig, aarch):
     thisconfig.append('Substitute: kernel-headers bash')
     thisconfig.append('Support: config(bash)')
     thisconfig.append('%endif #targ_arch')
-    thisconfig.append('Prefer: -busybox')
-    thisconfig.append('Prefer: -busybox-fota')
-    thisconfig.append('Prefer: -injection-i586-target-glibc-fota')
-    thisconfig.append('Substitute: injection-i586-target-glibc-devel bash')
-    thisconfig.append('Ignore: injection-i586-target-glibc-devel')
-    # how did this get pulled in?
-    thisconfig.append('Ignore: qt5-qdoc')
-    thisconfig.append('Substitute: qt5-qdoc bash')
-    #psycopathy stuff
-    thisconfig.append('Ignore: dbus-test-helpers')
-    thisconfig.append('Substitute: dbus-test-helpers bash')
-    thisconfig.append('Substitute: dbus-python dbus-1-python-devel')
-    #mt-qt5-curator
-    thisconfig.append('Prefer: taglib-devel')
     return thisconfig
 
 def disable_check_section():
@@ -233,15 +209,6 @@ def rpmbuild_commands(archtype, SPECFILE, verbose, rpmbuilddir):
             --define "_unpackaged_files_terminate_build 0" \
             --target=' + archtype + '-suse-linux ' \
             + rpmbuilddir + '/SOURCES/' + SPECFILE + '\n\n'
-
-#        'rm -f /tmp/_mt_init_lang_packages.executed\n' \
-#the idiot hack for 'INSTALL_ROOT' is needed because so many packages forget to use %make_install instead of 'make install'
-# for example 'mt-notionclient'
-#this hack causes /sysroot to be definted for certificate-tools
-#            --define "__spec_build_post ln -s %{buildroot} %{buildroot}/sysroot; %{___build_post}" \
-#HACK HACK HACK caused by app_text_packager.sh (Michael Melber)
-#        'rm -f /tmp/_mt_init_lang_packages.executed\n' \
-#            --define "_arch ' + archtype + '" \
 
 # main
 if os.path.exists('profconfig'):
