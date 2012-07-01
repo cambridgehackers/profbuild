@@ -55,15 +55,6 @@ def expand_all_dependencies(context, atargetarch, archname, adependlist, aload_i
     for name in dependlist:
         if name.strip() == '' or name in ['filesystem', 'aaa_base', 'config(bash)']:
             continue
-        if False and name in ['coreutils', 'bind-libs', 'bind-utils', 'ncurses-devel', 'openldap2-client', 'rpm', 'libzio', 'libnscd']:
-            # in NT, coreutils conflicts with mktemp
-            # bind-libs and bind-utils, openldap2-client requires libcrypto that conflicts with openssl
-            # ncurses-devel requires uninstallable libncurses5
-            # rpm uses popt, which conflicts
-            #    libpopt0-1.16-8.2.i586[MTB]
-            #    armv7hl-baselayer-sysroot-0-3.1.i586[MTNT]
-            #    i586-baselayer-sysroot
-            continue
         for subitem in context.pconfig.configlists['Substitute']:
             if name == subitem[0]:
                 #print('subst', name, subitem[1])
@@ -80,36 +71,33 @@ def expand_all_dependencies(context, atargetarch, archname, adependlist, aload_i
         if aload_in_sysroot:
             rootstring = 'SYSROOT'
         if not aload_in_sysroot or customization.FORCE_HOST_TOOLS(name):
-            if name.startswith('injection-armv7hl-'):
-                if name.startswith('injection-armv7hl-target'):
+            if name.startswith('injection-' + customization.targetarch + '-'):
+                if name.startswith('injection-' + customization.targetarch + '-target'):
                     continue
                 tstrrt = tstrrt + tname
             else:
                 tstrr = tstrr + tname
             rootstring = ''
         elif (name in context.inprocess and not customization.FORCE_TARGET(name)) \
-          or name.startswith('injection-armv7hl-host'):
+          or name.startswith('injection-' + customization.targetarch + '-host'):
             continue
         else:
             tstrs = tstrs + tname
         context.inprocess.append(rootstring + name)
-    #temprpmdir = ' ' + os.path.dirname(context.rootdir) + '/RPMS/noarch/'
     temprpmdir = ' ' + os.getcwd() + '/'
-    tzpack = temprpmdir + 'tzdata-1-0.noarch.rpm'
-    if not os.path.exists(tzpack.strip()):
-         tzpack = ''
-    #    genutil.runcall('./rebuild_fake.sh', '.')
+    ignorepack = ' ' + os.path.dirname(context.rootdir) + '/RPMS/noarch/ignore-1-0.noarch.rpm'
+    if not os.path.exists(ignorepack.strip()):
+        genutil.runcall('./rebuild_fake.sh', '.')
     if context.verbose > 2:
         print('adependlist:', adependlist is not None, aload_in_sysroot)
         print('tstrrt:', tstrrt)
         print('tstrs:', tstrs)
     if adependlist is None:
         if tstrrt != '':
-            #tstrrt = tstrrt + temprpmdir + 'notarget-1-0.noarch.rpm' + tzpack
-            print('zypper_start(armv7hl, rootdir in ' + tstrrt)
-            genutil.runcall(zypper_start('armv7hl', context.rootdir) + 'in --no-recommends ' + tstrrt, context.rootdir)
+            #tstrrt = tstrrt + ignorepack
+            print('zypper_start(' + customization.targetarch + ', rootdir in ' + tstrrt)
+            genutil.runcall(zypper_start(customization.targetarch, context.rootdir) + 'in --no-recommends ' + tstrrt, context.rootdir)
         if tstrr != '':
-            #tstrr = tstrr + ' injection-i586-host-glibc' + temprpmdir + 'busybox-1-0.noarch.rpm'
             tstrr = tstrr + ' qemu ' + temprpmdir + 'noarch/prebuilt-android-ndk-1-0.noarch.rpm ' + temprpmdir + 'noarch/prebuilt-arm-linux-androideabi-1-0.noarch.rpm'
             print('zypper_start(i586, rootdir in ' + tstrr)
             genutil.runcall(zypper_start('i586', context.rootdir) + 'in --no-recommends ' + tstrr, context.rootdir)
@@ -124,10 +112,10 @@ def expand_all_dependencies(context, atargetarch, archname, adependlist, aload_i
             os.symlink('../sysroot/usr/include', context.rootdir + '/usr/include')
             os.symlink('../sysroot/usr/share', context.rootdir + '/usr/share')
             os.symlink('../sysroot/etc', context.rootdir + '/etc')
+    tstrs = tstrs + ignorepack
     if tstrs != '':
-        tstrs = tstrs + temprpmdir + 'busybox-1-0.noarch.rpm' + tzpack
-        print('zypper_start(armv7hl, /sysroot in ' + tstrs)
-        genutil.runcall(zypper_start('armv7hl', context.rootdir + '/sysroot') + 'in --no-recommends ' + tstrs, context.rootdir + '/sysroot')
+        print('zypper_start(' + customization.targetarch + ', /sysroot in ' + tstrs)
+        genutil.runcall(zypper_start(customization.targetarch, context.rootdir + '/sysroot') + 'in --no-recommends ' + tstrs, context.rootdir + '/sysroot')
     #
     # Fixup links in /sysroot/usr/lib that point to /lib.  They should point to /sysroot/lib
     #
@@ -160,13 +148,12 @@ def make_chroot_template(context):
     genutil.init_file_script(context.verbose, customization.file_initial(context.archtype), context.rootdir)
     genutil.runcall('(cd ' + customization.scriptdir + '/template; tar cf - .) | tar xf -', context.rootdir)
     genutil.runcall(customization.sudoprog + ' mknod -m a=rw ' + context.rootdir + '/dev/null c 1 3', '.')
-    genutil.runcall(customization.sudoprog + ' mkfifo ' + context.rootdir + '/dev/log/main', '.')
+    #genutil.runcall(customization.sudoprog + ' mkfifo ' + context.rootdir + '/dev/log/main', '.')
     rcallbase = 'prof-rpm --nochroot --quiet ' + genutil.rpmmacros() + ' --root=' + context.rootdir
     #genutil.runcall(rcallbase + ' --initdb', '.')
     #genutil.runcall(rcallbase + '/sysroot --initdb', '.')
     #process required RPMs for generic prjconf template
     expand_all_dependencies(context, None, context.hostarch, None, False)
-    print('temporarily skip generic ARM package install')
     #expand_all_dependencies(context, context.archtype, context.archtype, None, True)
     genutil.init_file_script(context.verbose, customization.file_edit_list(context.archtype), context.rootdir)
     for singlefile in glob.glob(context.rootdir + '/opt/*/lib/*'):

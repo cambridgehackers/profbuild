@@ -126,4 +126,4 @@ def depend_list(verbose, rootdir, archtype, abuildproject, aargv):
         #    print('item', key)
 
 if __name__ == '__main__':
-    sys.exit(depend_list(0, 'sandbox/ssspecs', 'armv7hl', 'MT', sys.argv[1:]))
+    sys.exit(depend_list(0, 'sandbox/ssspecs', customization.targetarch, 'SUSE', sys.argv[1:]))

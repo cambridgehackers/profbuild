@@ -116,18 +116,19 @@ class ScheduleClass:
 
 def process(logging_active, params, projectname, itemlist):
     global elapsed_time
+    add_damages = False
     ids = range(0,MAX_TEMP_ID)
     trpmdir = rpmrepo.translate_reponame('localrpm') + '/'
     if os.path.exists(TOP_DIR + '/bb.lockfile'):
         os.remove(TOP_DIR + '/bb.lockfile')
     active_processes = []
     sspl_last = None
-    logdir = 'logs.armv7hl'
+    logdir = 'logs.run'
     if not os.path.exists(logdir):
         os.makedirs(logdir, 0o777)
     cleandir('[0-9]*')
     forcerepomd = False
-    context = sourcerepo.PackageContext([TOP_DIR + '/bb0master', 'armv7hl', projectname], 0, 'i586', forcerepomd)
+    context = sourcerepo.PackageContext([TOP_DIR + '/bb0master', customization.targetarch, projectname], 0, 'i586', forcerepomd)
     for tpack in rpmrepo.packagelist:
         if tpack.get('rpm:sourcerpm') is None and tpack.get('rpm:requires'):
             #print('sourcep', tpack['name'], tpack['rpm:requires'])
@@ -253,7 +254,7 @@ def process(logging_active, params, projectname, itemlist):
             chrootdir = TEMP_DIR
             if nextitem in customization.need_unique_chroot:
                 chrootdir = TOP_DIR + '/bb' + str(thisid) + '/bb'
-            for item in [chrootdir + str(thisid), 'armv7hl', projectname, nextitem]:
+            for item in [chrootdir + str(thisid), customization.targetarch, projectname, nextitem]:
                 cmd.append(item)
             p = subprocess.Popen(cmd, stdout=outfile, stderr=outfile, preexec_fn=os.setsid)
             p.starttime = datetime.datetime.utcnow()
@@ -320,7 +321,7 @@ def process(logging_active, params, projectname, itemlist):
                                     if cret != 0:
                                         updated_output = True
                                         shutil.copy(rpath, nfile)
-                    if updated_output:
+                    if updated_output and add_damages:
                         print('Info:', p.sitem.name, 'generated changed RPMs, damages', p.sitem.damages)
                         for item in p.sitem.damages:
                             add_schedule(scheduleitem, item)
