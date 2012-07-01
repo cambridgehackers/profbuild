@@ -1,6 +1,8 @@
 
 import netrc
 
+targetarch = 'armv7'
+
 if not os.path.exists(os.path.expanduser('~/.netrc')):
     print('Error: the file', os.path.expanduser('~/.netrc'), ' must have an entry for api.opensuse.org')
     sys.exit(1)
@@ -17,8 +19,8 @@ blacklist = ['home:', 'network:', 'isv:',
 whitelist = ['openSUSE:12.1']
 
 editlist = [ \
-    ('rm', '/opt/cross/' + 'armv7hl' + '-cross-linux-gnueabi/sys-root'), \
-    ('ln', '/sysroot',                     '/opt/cross/' + 'armv7hl' + '-cross-linux-gnueabi/sys-root'), \
+    ('rm', '/opt/cross/' + targetarch + '-cross-linux-gnueabi/sys-root'), \
+    ('ln', '/sysroot',                     '/opt/cross/' + targetarch + '-cross-linux-gnueabi/sys-root'), \
     ('ln', '/sysroot/opt/cross',           '/opt/cross'), \
     ];
 
@@ -32,4 +34,3 @@ sourcerepo = mirrordir + 'suse/'
 
 need_unique_chroot = []
 
-added_rpmbuild_environment = 'export PATH=$PATH:/opt/cross/bin\n'

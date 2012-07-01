@@ -38,7 +38,6 @@ sudoprog = 'sudo'
 
 bannedpackages = []
 need_unique_chroot = []
-added_rpmbuild_environment = ''
 job_count = 2
 
 # can't parse Recommends in telepathy-mission-control, telepathy-gabble in rpmspec
@@ -72,7 +71,7 @@ def file_initial(archtype):
     ('ln', '../sysroot/usr/include', '/usr/include'), \
     ('ln', '../sysroot/usr/share',   '/usr/share'), \
     ('ln', '../../../zypp.i586',           '/var/cache/zypp'), \
-    ('ln', '../../../../zypp.armv7hl',     '/sysroot/var/cache/zypp'), \
+    ('ln', '../../../../zypp.' + targetarch,     '/sysroot/var/cache/zypp'), \
     ('ln', '../../zypp',                   '/etc/zypp'), \
     ('ln', os.environ['HOME'] + '/.zypp',  os.environ['HOME'] + '/.zypp'), \
     ('ln', os.environ['HOME'] + '/.zypp',  '/sysroot/' + os.environ['HOME'] + '/.zypp'), \
@@ -93,7 +92,9 @@ def file_edit_list(archtype):
     ('touch', '/var/log/wtmp'), \
     ('touch', '/var/run/utmp'), \
     ('touch', '/dev/fd/0'), \
-    ('sed', r's/i586-suse-linux-gnu/armv7hl-suse-linux-gnueabi/', '/usr/lib/rpm/macros'), \
+    ('touch', '/etc/sysconfig/security'), \
+    ('ln', 'asm-arm', '/usr/include/asm'), \
+    ('sed', r's/i586-suse-linux-gnu/' + targetarch + '-suse-linux-gnueabi/', '/usr/lib/rpm/macros'), \
     ('sed', r's/! rpm -ql filesystem | egrep -q /0 \&\& ! rpm -ql filesystem | egrep -q /', '/usr/lib/rpm/find-lang.sh'), \
     ('rm', '/lib/*2.13.so'), \
     ('ln', '/bin/gawk',                    '/bin/awk'), \
@@ -128,9 +129,9 @@ def editconfig(fconfig, aarch):
     append10 = False
     thisconfig = []
     for line in fconfig:
-        if line.startswith('%ifarch armv7hl'):
+        if line.startswith('%ifarch ' + targetarch):
             thisconfig.append('%if %{?targ_arch:1}0')
-            thisconfig.append('%if %targ_arch==armv7hl')
+            thisconfig.append('%if %targ_arch==' + targetarch)
         elif line.startswith('%ifarch i586'):
             thisconfig.append('%if %targ_arch==i586')
         elif line.startswith('%endif # i586'):
@@ -147,15 +148,15 @@ def editconfig(fconfig, aarch):
         elif not line.startswith('#'):
             thisconfig.append(line)
     thisconfig.append('%if %{?targ_arch:1}0')
-    thisconfig.append('%if %targ_arch==armv7hl')
-    #thisconfig.append('Preinstall: injection-armv7hl-host-glibc')
+    thisconfig.append('%if %targ_arch==' + targetarch)
+    #thisconfig.append('Preinstall: injection-' + targetarch + '-host-glibc')
     thisconfig.append('%endif')
     thisconfig.append('%if %targ_arch==i586')
     #thisconfig.append('Preinstall: injection-i586-host-glibc')
     thisconfig.append('%endif')
     thisconfig.append('%else #targ_arch')
     thisconfig.append('%ifarch %arm')
-    thisconfig.append('Prefer: injection-armv7hl-target-glibc injection-armv7hl-target-libstdc++ injection-armv7hl-target-libgcc')
+    thisconfig.append('Prefer: injection-' + targetarch + '-target-glibc injection-' + targetarch + '-target-libstdc++ injection-' + targetarch + '-target-libgcc')
     thisconfig.append('%endif')
     thisconfig.append('%ifarch %ix86')
     thisconfig.append('Prefer: injection-i586-target-glibc injection-i586-target-libstdc++ injection-i586-target-libgcc')
@@ -193,22 +194,19 @@ def rpmbuild_commands(archtype, SPECFILE, verbose, rpmbuilddir):
         q = ''
         jobs = ' --define "jobs 1"'
     return \
+        'source /root/.bashrc\n' \
         'export MACHINE=' + archtype + '\n' \
         'export PKG_CONFIG_PATH=/sysroot/usr/lib/pkgconfig\n' \
-        + added_rpmbuild_environment + \
-        'export PATH=$PATH:/sysroot/usr/bin:/sysroot/bin\n' \
         'export VPATH=/sysroot/usr/lib:/sysroot/lib\n' \
-        'export MT_SYSROOT=/sysroot\n' \
         'chown `id -u`:`id -g` ' + rpmbuilddir + '/SOURCES/*\n' \
         'alias rm="rm -f"\n' \
         'export QMAKESPEC=linux-g++\n' \
         + stracecmd + 'rpmbuild -ba ' + q + jobs + ' --define "_srcdefattr (-,root,root)" \
             --define "_topdir ' + rpmbuilddir + '" --root /sysroot --nodeps \
             --define "_arch ' + thisarch + '" \
-            --define "__spec_install_pre  export INSTALL_ROOT=%{buildroot}; %{___build_pre}" \
             --define "_unpackaged_files_terminate_build 0" \
             --target=' + archtype + '-suse-linux ' \
-            + rpmbuilddir + '/SOURCES/' + SPECFILE + '\n\n'
+            + rpmbuilddir + '/SOURCES/' + SPECFILE + ' </dev/null\n\n'
 
 # main
 if os.path.exists('profconfig'):
