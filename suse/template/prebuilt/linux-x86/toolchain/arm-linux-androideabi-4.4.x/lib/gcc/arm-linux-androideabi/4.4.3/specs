@@ -1,0 +1,15 @@
+
+*local_sysroot_prefix:
+/prebuilt/ndk/android-ndk-r7/platforms/android-14/arch-arm
+
+*sysroot_spec:
+--sysroot=%(local_sysroot_prefix)
+
+*cpp:
+%(subtarget_cpp_spec)					%{msoft-float:%{mhard-float:							%e-msoft-float and -mhard_float may not be used together}}	%{mbig-endian:%{mlittle-endian:							%e-mbig-endian and -mlittle-endian may not be used together}} -I%(local_sysroot_prefix)/usr/include
+
+*endfile:
+%{mno-android|tno-android-ld:%{shared|pie:%(local_sysroot_prefix)/usr/lib/crtendS.o%s;:%(local_sysroot_prefix)/usr/lib/crtend.o%s} crtn.o%s;:%{!shared: %(local_sysroot_prefix)/usr/lib/crtend_android%O%s}}
+
+*startfile:
+%{mno-android|tno-android-ld:%{!shared: %{pg|p|profile:gcrt1.o%s;pie:%(local_sysroot_prefix)/usr/lib/Scrt1.o%s;:%(local_sysroot_prefix)/usr/lib/crt1.o%s}}    crti.o%s %{static:crtbeginT.o%s;shared|pie:crtbeginS.o%s;:crtbegin.o%s};:%{!shared:  %{static: %(local_sysroot_prefix)/usr/lib/crtbegin_static%O%s;: %(local_sysroot_prefix)/usr/lib/crtbegin_dynamic%O%s}}}
