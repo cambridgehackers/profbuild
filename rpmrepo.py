@@ -25,7 +25,7 @@
 #
 
 from __future__ import print_function
-import gzip, os, sys, xml.parsers.expat
+import gzip, json, os, sys, xml.parsers.expat
 import customization, genutil
 
 number_connections = 4
@@ -78,6 +78,17 @@ class ParseRepomd:
     def __init__(self, rmap):
         global repomap, packagelist, saveddatafilebase, verbose
         self.namelist = {}
+        if os.path.exists(saveddatafilebase + 'data'):
+            fh = open(saveddatafilebase + 'data')
+            self.namelist = json.load(fh)
+            fh.close()
+            fh = open(saveddatafilebase + 'map')
+            repomap = json.load(fh)
+            fh.close()
+            fh = open(saveddatafilebase + 'pack')
+            packagelist = json.load(fh)
+            fh.close()
+            return
         # Gather info about RPMs for each repo associated with a linked source project
         for self.repo in rmap:
             self.curpack = None
@@ -85,11 +96,10 @@ class ParseRepomd:
             # First, parse the repomd.xml file to get the filename for xxx-primary.xml.gz
             self.xml = xml.parsers.expat.ParserCreate()
             self.xml.StartElementHandler = self.repomd_xml_start
-            rname = self.repo['basedir'] + 'repodata/repomd.xml'
-            if not os.path.exists(rname):
-                print('Error: missing repodata:', rname)
+            if not os.path.exists(self.repo['basedir'] + 'repodata/repomd.xml'):
+                print('Error: missing repodata:', self.repo['basedir'] + 'repodata/repomd.xml')
                 genutil.exitprocessing(-501)
-            self.xml.Parse(open(rname).read())
+            self.xml.Parse(open(self.repo['basedir'] + 'repodata/repomd.xml').read())
         localfile = translate_reponame('localrpm') + '/'
         if os.path.exists(localfile + 'repodata/repomd.xml'):
             #print('*************** loading local rpm repo')
@@ -100,6 +110,16 @@ class ParseRepomd:
             self.xml = xml.parsers.expat.ParserCreate()
             self.xml.StartElementHandler = self.repomd_xml_start
             self.xml.Parse(open(self.repo['basedir'] + 'repodata/repomd.xml').read())
+        fh = open(saveddatafilebase + 'map', 'w')
+        json.dump(repomap, fh, indent=1)
+        fh.close()
+        fh = open(saveddatafilebase + 'pack', 'w')
+        json.dump(packagelist, fh, indent=1)
+        fh.close()
+        fh = open(saveddatafilebase + 'data.tmp', 'w')
+        json.dump(self.namelist, fh, indent=1)
+        fh.close()
+        os.rename(saveddatafilebase + 'data.tmp', saveddatafilebase + 'data')
     def repomd_xml_start(self, name, attrs):
         if verbose > 0:
             print('Start repomd:', name, attrs)
@@ -111,11 +131,10 @@ class ParseRepomd:
             self.primaryxml.StartElementHandler = self.primary_xml_start
             self.primaryxml.EndElementHandler = self.primary_xml_end
             self.primaryxml.CharacterDataHandler = self.xml_charhandler
-            rname = self.repo['basedir'] + attrs.get('href').encode('latin-1')
-            if not os.path.exists(rname):
-                print('Error: missing repodata:', rname)
+            if not os.path.exists(self.repo['basedir'] + attrs.get('href').encode('latin-1')):
+                print('Error: missing repodata:', self.repo['basedir'] + attrs.get('href').encode('latin-1'))
                 genutil.exitprocessing(-501)
-            fh = gzip.open(rname)
+            fh = gzip.open(self.repo['basedir'] + attrs.get('href').encode('latin-1'))
             self.primaryxml.Parse(fh.read())
             fh.close()
     def primary_xml_start(self, name, attrs):
@@ -134,13 +153,16 @@ class ParseRepomd:
                     print('Start primaryxml:', name, attrs)
                 pass
         elif self.entrytype in ['rpm:requires', 'rpm:provides']:
-            ename = attrs.get('name') #.encode('latin-1')
+            try:
+                ename = attrs.get('name').encode('latin-1')
+            except:
+                return
             if packagelist[self.curpack].get(self.entrytype) is None:
                 packagelist[self.curpack][self.entrytype] = []
             packagelist[self.curpack][self.entrytype].append(ename)
             if self.entrytype == 'rpm:requires':
                 self.add_to_name(ename, True)
-            elif self.entrytype == 'rpm:provides':
+            else:
                 self.add_to_name(ename, False)
         elif self.entrytype in packageattr:
             pass
@@ -157,7 +179,10 @@ class ParseRepomd:
         if verbose > 0:
             print('Pend ', name, ':', self.chardata)
         if name == 'file':
-            self.add_to_name(self.chardata, False)
+            try:
+                self.add_to_name(self.chardata.encode('latin-1'), False)
+            except:
+                pass
         elif name in packagecattr:
             packagelist[self.curpack][name] = self.chardata
         elif name == 'package':
