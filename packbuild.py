@@ -154,7 +154,7 @@ def make_chroot_template(context):
     #genutil.runcall(rcallbase + '/sysroot --initdb', '.')
     #process required RPMs for generic prjconf template
     expand_all_dependencies(context, None, context.hostarch, None, False)
-    #expand_all_dependencies(context, context.archtype, context.archtype, None, True)
+    expand_all_dependencies(context, context.archtype, context.archtype, None, True)
     genutil.init_file_script(context.verbose, customization.file_edit_list(context.archtype), context.rootdir)
     for singlefile in glob.glob(context.rootdir + '/opt/*/lib/*'):
         snew = os.path.basename(singlefile)

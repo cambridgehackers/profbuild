@@ -7,3 +7,13 @@ type=rpm-md
 priority=76
 gpgcheck=0
 keeppackages=0
+
+[local]
+name=local
+enabled=1
+autorefresh=0
+baseurl=file:///home/jca/profbuild/suse/test/localrpmdir
+type=rpm-md
+priority=76
+gpgcheck=0
+keeppackages=0

@@ -102,7 +102,7 @@ class ParseRepomd:
             self.xml.Parse(open(self.repo['basedir'] + 'repodata/repomd.xml').read())
         localfile = translate_reponame('localrpm') + '/'
         if os.path.exists(localfile + 'repodata/repomd.xml'):
-            #print('*************** loading local rpm repo')
+            print('*************** loading local rpm repo')
             self.curpack = None 
             self.repo = create_repo_info('localrpm')
             self.repo['basedir'] = localfile

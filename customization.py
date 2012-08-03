@@ -76,6 +76,7 @@ def file_initial(archtype):
     ('ln', os.environ['HOME'] + '/.zypp',  os.environ['HOME'] + '/.zypp'), \
     ('ln', os.environ['HOME'] + '/.zypp',  '/sysroot/' + os.environ['HOME'] + '/.zypp'), \
     ('ln', '/out/target/product/generic/system', '/system'), \
+    ('ln', '../etc' ,                        '/sysroot/etc'), \
     ]
 
 def file_edit_list(archtype):
