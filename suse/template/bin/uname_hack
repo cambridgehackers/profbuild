@@ -1,0 +1,38 @@
+#!/bin/bash
+
+if test $# -eq 0; then
+    echo Linux
+    exit
+fi
+while test -n "$1" ; do
+    case "$1" in
+    -m)
+        echo armv7
+        shift
+        ;;
+    -r)
+        echo "2.6.35.13-91.fc14"
+        shift
+        ;;
+    -s)
+        echo Linux
+        shift
+        ;;
+    -v)
+        echo "#1 MagicSMP Tue May 3 13:23:06 UTC 2011"
+        shift
+        ;;
+    -m)
+        echo unknown
+        shift
+        ;;
+    -X)
+        echo unknown
+        shift
+        ;;
+    *)
+        echo "uname: unknown option = $1" 1>&2
+        shift
+        ;;
+    esac
+done
