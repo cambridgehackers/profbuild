@@ -82,6 +82,8 @@ Provides: libpopt0
 Provides: libreadline6
 Provides: libuuid1
 Provides: liblua5_1
+Provides: zlib
+Provides: gdbm
 
 %description
 

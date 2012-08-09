@@ -98,7 +98,9 @@ def expand_all_dependencies(context, atargetarch, archname, adependlist, aload_i
             print('zypper_start(' + customization.targetarch + ', rootdir in ' + tstrrt)
             genutil.runcall(zypper_start(customization.targetarch, context.rootdir) + 'in --no-recommends ' + tstrrt, context.rootdir)
         if tstrr != '':
-            tstrr = tstrr + ' qemu ' + temprpmdir + 'noarch/prebuilt-android-ndk-1-0.noarch.rpm ' + temprpmdir + 'noarch/prebuilt-arm-linux-androideabi-1-0.noarch.rpm'
+            tstrr = tstrr + ' qemu '
+            tstrr = tstrr + temprpmdir + 'noarch/android-sysroot-1-4.0.4_r1.2.noarch.rpm '
+            tstrr = tstrr + temprpmdir + 'noarch/android-gcc-1-4.0.4_r1.2.noarch.rpm '
             print('zypper_start(i586, rootdir in ' + tstrr)
             genutil.runcall(zypper_start('i586', context.rootdir) + 'in --no-recommends ' + tstrr, context.rootdir)
         if context.verbose > 2:

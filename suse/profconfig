@@ -26,11 +26,11 @@ editlist = [ \
 
 scriptdir = os.path.dirname(os.path.abspath('profconfig')) + '/../'
 mirrordir = os.path.expanduser('~/mirror/')
-buildbase = mirrordir + 'suse/repo/'
+sourcerepo = mirrordir + 'suseobs/'
+buildbase = sourcerepo + 'repo/'
 repobasedir = 'sandbox/zypp.i586/raw/'
 zypper_info_dir =  'sandbox/zypp/repos.d/'
 
-sourcerepo = mirrordir + 'suse/'
 
 need_unique_chroot = []
 

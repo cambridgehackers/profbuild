@@ -75,7 +75,7 @@ def file_initial(archtype):
     ('ln', '../../zypp',                   '/etc/zypp'), \
     ('ln', os.environ['HOME'] + '/.zypp',  os.environ['HOME'] + '/.zypp'), \
     ('ln', os.environ['HOME'] + '/.zypp',  '/sysroot/' + os.environ['HOME'] + '/.zypp'), \
-    ('ln', '/out/target/product/generic/system', '/system'), \
+    ('ln', '/aroot/out/target/product/maguro/system', '/system'), \
     ('ln', '../etc' ,                        '/sysroot/etc'), \
     ]
 
@@ -115,7 +115,8 @@ def file_edit_list(archtype):
     ('ln', '/sysroot/usr/lib/libz.so',     '/usr/local/lib/libz.so'), \
     ('ln', '/sysroot' ,                    '/sysroot/etc/qemu-binfmt/arm'), \
     ('ln', '/tmp' ,                        '/var/tmp'), \
-    ('ln', 'qemu-arm-static' ,             '/usr/bin/qemu-arm'), \
+    #('ln', 'qemu-arm-static' ,             '/usr/bin/qemu-arm'), \
+    ('ln', 'qemu-arm' ,                    '/usr/bin/qemu-arm-static'), \
     ('ln', '/usr/bin/gcc' ,                '/usr/bin/gcc-uClibc'), \
     ('ln', '/sysroot' ,                    '/usr/gnemul/qemu-arm'), \
     ('ln', 'bash',                         '/bin/sh'), \
@@ -196,6 +197,7 @@ def rpmbuild_commands(archtype, SPECFILE, verbose, rpmbuilddir):
         jobs = ' --define "jobs 1"'
     return \
         'source /root/.bashrc\n' \
+        'cp /system/bin/linker.chroot /system/bin/linker\n' \
         'export MACHINE=' + archtype + '\n' \
         'export PKG_CONFIG_PATH=/sysroot/usr/lib/pkgconfig\n' \
         'export VPATH=/sysroot/usr/lib:/sysroot/lib\n' \

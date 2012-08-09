@@ -1,0 +1,10 @@
+[SUSE]
+name=SUSE
+enabled=1
+autorefresh=0
+baseurl=http://tiny.nrcc.noklab.com/download.opensuse.org/distribution/12.1/repo/oss/suse/
+type=rpm-md
+priority=76
+gpgcheck=0
+keeppackages=0
+

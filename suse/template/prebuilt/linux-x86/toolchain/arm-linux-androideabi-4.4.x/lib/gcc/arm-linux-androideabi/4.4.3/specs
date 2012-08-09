@@ -1,6 +1,6 @@
 
 *local_sysroot_prefix:
-/prebuilt/ndk/android-ndk-r7/platforms/android-14/arch-arm
+/aroot
 
 *sysroot_spec:
 --sysroot=%(local_sysroot_prefix)

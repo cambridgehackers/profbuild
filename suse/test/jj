@@ -1,6 +1,6 @@
 #
 sudo rm -rf sandbox/bbgeneric/
 #./one -v -v -v -v -v -v -v -v acl
-./one -v -v -v -v -v -v -v -v bc
-#./one -v -v -v -v -v -v -v -v zlib
+#./one -v -v -v -v -v -v -v -v bc
+./one -v -v -v -v -v -v -v -v zlib
 #./one -v -v -v -v -v -v -v -v busybox
