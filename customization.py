@@ -198,6 +198,7 @@ def rpmbuild_commands(archtype, SPECFILE, verbose, rpmbuilddir):
     return \
         'source /root/.bashrc\n' \
         'cp /system/bin/linker.chroot /system/bin/linker\n' \
+        'ln -s /root/.* ' + os.environ['HOME'] + '\n' \
         'export MACHINE=' + archtype + '\n' \
         'export PKG_CONFIG_PATH=/sysroot/usr/lib/pkgconfig\n' \
         'export VPATH=/sysroot/usr/lib:/sysroot/lib\n' \

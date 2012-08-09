@@ -167,7 +167,7 @@ def make_chroot_template(context):
     fh = open(context.rootdir + '/root/.rpmmacros', 'wa')
     for inp in context.pconfig.macrodefs:
         fh.write(inp + '\n')
-    if False:
+    if True:
         fh.write(customization.disable_check_section())
     fh.close()
     genutil.run_ldconfig(context.rootdir)
