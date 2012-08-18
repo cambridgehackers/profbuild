@@ -11,6 +11,8 @@ class MyHTMLParser(HTMLParser.HTMLParser):
         p = attrs.get('href')
         if tag == 'a' and p is not None and p.endswith(';a=tree'):
             p = p[p.index('=')+1:p.index(';')]
+            if p.endswith('.git'):
+                p = p[:-4]
             #fn.write(p[:p.rindex('/')] + ' ' + sys.argv[2] + '/' + p + '\n')
             fn.write(p + ' ' + sys.argv[2] + '/' + p + '\n')
     def handle_endtag(self, tag):
