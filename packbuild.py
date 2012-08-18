@@ -167,6 +167,7 @@ def make_chroot_template(context):
     fh = open(context.rootdir + '/root/.rpmmacros', 'wa')
     for inp in context.pconfig.macrodefs:
         fh.write(inp + '\n')
+    #fh.write('%__cc /usr/bin/gcc\n')
     if True:
         fh.write(customization.disable_check_section())
     fh.close()

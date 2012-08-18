@@ -28,7 +28,6 @@ from git.error import GitError
 
 MAX_THREAD_LIMIT = 40
 FINISH_DELAY_TIME = 20
-queue = []
 verbose = 0
 def process_tar(outfile, aurldirectory, atargetdir, asubdir, arevision, aservice, scm_origin_data, alocal):
     #print('outf', outfile, 'dir', aurldirectory)
@@ -51,23 +50,6 @@ def process_tar(outfile, aurldirectory, atargetdir, asubdir, arevision, aservice
     runcall('tar uf ' + tarfile + scm_filename, atargetdir)
     os.remove(tscm_filename)
     return 0
-def process_fetch(aurldirectory, selfurl):
-    global trace_only
-    rfdir = aurldirectory
-    if not os.path.exists(rfdir):
-        rfdir = os.path.dirname(rfdir)
-        print('Clone repo ', selfurl, 'into', rfdir)
-        genutil.chroot_makedirs(rfdir)
-        cmd = ['clone', selfurl]
-    else:
-        print('Fetch repo ', aurldirectory)
-        cmd = ['fetch'];
-    if trace_only:
-        print('cmd', cmd)
-    elif run_git(cmd, rfdir):
-        run_git(['submodule', 'init'], aurldirectory)
-        run_git(['submodule', 'sync'], aurldirectory)
-        run_git(['submodule', 'update'], aurldirectory)
 def runcall(command, dirname):
     if verbose > 0:
         print('run command', command)
@@ -158,6 +140,7 @@ class ParseService:
     def char_data(self, chrs):
         self.content = self.content + chrs
     def process(self, atargetdir, repolist, auser_name):
+        global fn
         curitem = self.servicelist
         if auser_name is None:
             if atargetdir[0] != '/':
@@ -190,7 +173,7 @@ class ParseService:
                 elif curitem.data['url'] is not None and not curitem.data['url'] in repolist:
                     curitem.data['url'] = curitem.data['url'].replace('ssh://obs_user@', 'ssh://' + auser_name + '@')
                     repolist.append(curitem.data['url'])
-                    queue.append((urldirectory, curitem.data['url']))
+                    fn.write(urldirectory, curitem.data['url'])
             elif auser_name is not None or self.return_code != 0:
                 pass
             elif curitem.service == 'extract_file':
@@ -229,6 +212,9 @@ class ParseService:
         return self.return_code
 
 def main():
+    global fn
+    tempfilename = 'xx.parseservicetempfile'
+    fn = open(tempfilename, 'w')
     repolist = []
     for file in glob.glob(customization.sourcerepo + 'repo/*/*._manifest'):
         masterfh = ParseOBS.ParsePackage(file).filelist
@@ -237,37 +223,8 @@ def main():
             if filename == '_service':
                 #print("*********************", os.path.basename(file)[:-10])
                 s = ParseService(0, customization.sourcerepo + objectfile, False).process(None, repolist, customization.username)
-    runq = []
-    while queue != []:
-        item = queue.pop()
-        t = threading.Thread(target=process_fetch, args=(item[0], item[1],))
-        t.start()
-        runq.append(t)
-        while len(runq) > MAX_THREAD_LIMIT:
-            time.sleep(0.5)
-            for item in runq:
-                if not item.isAlive():
-                    item.join()
-                    runq.remove(item)
-    finishdelay = 0
-    while len(runq) > 0:
-        for item in runq:
-            if item.isAlive():
-                if finishdelay > FINISH_DELAY_TIME:
-                    for thread in runq:
-#threading.enumerate():
-                        if thread.isAlive():
-                            print('Timeout: killing', thread)
-                            try:
-                                thread._Thread__stop()
-                            except:
-                                print(str(thread.getName()) + ' could not be terminated')
-            else:
-                item.join()
-                runq.remove(item)
-                finishdelay = 0
-        time.sleep(0.5)
-        finishdelay += 1
+    fn.close()
+    run('gitclone.py ' + tempfilename)
 
 if __name__ == '__main__':
     global trace_only
