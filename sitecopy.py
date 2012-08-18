@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import HTMLParser, sys, urllib2
+import HTMLParser, os, sys, urllib2
 import gitclone
 
 class MyHTMLParser(HTMLParser.HTMLParser):
@@ -11,10 +11,11 @@ class MyHTMLParser(HTMLParser.HTMLParser):
         p = attrs.get('href')
         if tag == 'a' and p is not None and p.endswith(';a=tree'):
             p = p[p.index('=')+1:p.index(';')]
-            if p.endswith('.git'):
-                p = p[:-4]
+            pdir = p
+            if pdir.endswith('.git'):
+                pdir = pdir[:-4]
             #fn.write(p[:p.rindex('/')] + ' ' + sys.argv[2] + '/' + p + '\n')
-            fn.write(p + ' ' + sys.argv[2] + '/' + p + '\n')
+            fn.write(pdir + ' ' + sys.argv[2] + '/' + p + '\n')
     def handle_endtag(self, tag):
         pass
         #print "Encountered an end tag :", tag
@@ -29,4 +30,5 @@ tempfilename = 'xx.sitecopy.tempfile'
 fn = open(tempfilename, 'w')
 MyHTMLParser().feed(urllib2.urlopen(sys.argv[1]).read())
 fn.close()
-gitclone.main(False, tempfilename, False)
+gitclone.main(False, tempfilename, False, 4000, 4000)
+os.remove(tempfilename)

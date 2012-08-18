@@ -57,18 +57,18 @@ def run_git(acommand, adir):
         return False
     return True
 
-def main(atrace, filename, submodule):
+def main(atrace, filename, submodule, athread_limit, afinish_delay):
     global trace_only
     trace_only = atrace
     runq = []
     fn = open(filename, 'r')
     for foo in fn:
         item = foo.split(' ')
-        print(item)
+        #print(item)
         t = threading.Thread(target=process_fetch, args=(item[0], item[1], submodule, ))
         t.start()
         runq.append(t)
-        while len(runq) > MAX_THREAD_LIMIT:
+        while len(runq) > athread_limit:
             time.sleep(0.5)
             for item in runq:
                 if not item.isAlive():
@@ -78,7 +78,7 @@ def main(atrace, filename, submodule):
     while len(runq) > 0:
         for item in runq:
             if item.isAlive():
-                if finishdelay > FINISH_DELAY_TIME:
+                if finishdelay > afinish_delay:
                     for thread in runq:
 #threading.enumerate():
                         if thread.isAlive():
@@ -104,4 +104,4 @@ if __name__ == '__main__':
         if sys.argv[1] == '-t':
             atrace = True
             p = sys.argv[2]
-    main(atrace, p, True)
+    main(atrace, p, True, MAX_THREAD_LIMIT, FINISH_DELAY_TIME)
