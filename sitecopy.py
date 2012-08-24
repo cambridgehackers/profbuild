@@ -30,5 +30,6 @@ tempfilename = 'xx.sitecopy.tempfile'
 fn = open(tempfilename, 'w')
 MyHTMLParser().feed(urllib2.urlopen(sys.argv[1]).read())
 fn.close()
-gitclone.main(False, tempfilename, False, 4000, 4000)
+thread_limit = 20 //10 //15 //20 //40
+gitclone.main(False, tempfilename, False, thread_limit, 4000)
 os.remove(tempfilename)

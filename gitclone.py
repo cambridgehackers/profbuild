@@ -32,14 +32,20 @@ verbose = 0
 def process_fetch(aurldirectory, selfurl, submodule):
     global trace_only
     rfdir = aurldirectory
+    if not os.path.exists(rfdir) and os.path.exists(rfdir + '.git'):
+        rfdir = rfdir + '.git'
     if not os.path.exists(rfdir):
         rfdir = os.path.dirname(rfdir)
         print('Clone repo ', selfurl, 'into', rfdir)
+        if rfdir == '':
+            rfdir = '.'
         genutil.chroot_makedirs(rfdir)
-        cmd = ['clone', '--no-checkout', selfurl]
+        #cmd = ['clone', '--no-checkout', selfurl]
+        cmd = ['clone', '--mirror', selfurl]
     else:
         print('Fetch repo ', aurldirectory)
-        cmd = ['fetch'];
+        #cmd = ['fetch', '--all'];
+        cmd = ['remote', 'update'];
     if trace_only:
         print('cmd', cmd)
     elif run_git(cmd, rfdir):
@@ -53,7 +59,7 @@ def runcall(command, dirname):
     subprocess.call(command, shell=True, cwd=dirname, stdout=sys.stdout, stderr=sys.stdout)
 def run_git(acommand, adir):
     if GitCommand(None, acommand, cwd=adir).Wait() != 0:
-        print('gitcommand error: failed ', acommand, ' ***************************************')
+        print('gitcommand error: failed ', acommand, adir, ' ***************************************')
         return False
     return True
 
@@ -63,6 +69,7 @@ def main(atrace, filename, submodule, athread_limit, afinish_delay):
     runq = []
     fn = open(filename, 'r')
     for foo in fn:
+        foo = foo.replace('\n', '').replace('\r', '')
         item = foo.split(' ')
         #print(item)
         t = threading.Thread(target=process_fetch, args=(item[0], item[1], submodule, ))
