@@ -103,12 +103,17 @@ def main(atrace, filename, submodule, athread_limit, afinish_delay):
 
 if __name__ == '__main__':
     atrace = False
-    if len(sys.argv) < 2:
-        print('gitclone.py [-t] <list_of_repos_and_directories_file>')
-        sys.exit(1)
+    asubmodules = True
+    fileindex = 1
     p = sys.argv[1]
-    if len(sys.argv) > 2:
+    for indx in range(1, len(sys.argv) - 1):
         if sys.argv[1] == '-t':
             atrace = True
-            p = sys.argv[2]
-    main(atrace, p, True, MAX_THREAD_LIMIT, FINISH_DELAY_TIME)
+            fileindex += 1
+        elif sys.argv[1] == '-ns':
+            asubmodules = False
+            fileindex += 1
+    if len(sys.argv) != fileindex + 1:
+        print('gitclone.py [-t] [-s] <list_of_repos_and_directories_file>')
+        sys.exit(1)
+    main(atrace, sys.argv[fileindex], asubmodules, MAX_THREAD_LIMIT, FINISH_DELAY_TIME)
