@@ -19,63 +19,32 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
 
-import HTMLParser, os, sys, urllib2
-import gitclone
+import HTMLParser, os, sys, urllib2, subprocess
+#import gitclone
 
 class MyHTMLParser(HTMLParser.HTMLParser):
     global fn
     def handle_starttag(self, tag, aattrs):
-        global in_repository
         #print "Encountered a start tag:", tag, aattrs
         attrs = dict(aattrs)
         p = attrs.get('href')
-        if tag == 'li' and attrs.get('class') == 'repository':
-            in_repository = True
-        if tag == 'a' and p is not None and attrs.get('title') is not None and p.startswith('/'):
-            # logicpd (cgit)
-            if p.endswith('/'):
-                p = p[:-1]
-            if p[0] == '/':
-               p = p[1:]
-            if p.endswith('.git'):
-                p= pdir[:-4]
-            #fn.write(p[:p.rindex('/')] + ' ' + sys.argv[2] + '/' + p + '\n')
-            fn.write(p + ' ' + sys.argv[2] + '/' + p + '\n')
-        if tag == 'a' and p is not None and in_repository:
-            #inveia
-            if p[0] == '/':
-               p = p[1:]
-            p = p[p.index('/')+1:]
-            p = p[p.index('/')+1:]
-            pdir = p
-            if pdir.endswith('.git'):
-                pdir = pdir[:-4]
-            #fn.write(p[:p.rindex('/')] + ' ' + sys.argv[2] + '/' + p + '\n')
-            fn.write(pdir + ' ' + sys.argv[2] + '/' + p + '\n')
-        if tag == 'a' and p is not None and p.endswith(';a=tree'):
-            p = p[p.index('=')+1:p.index(';')]
-            pdir = p
-            if pdir.endswith('.git'):
-                pdir = pdir[:-4]
-            #fn.write(p[:p.rindex('/')] + ' ' + sys.argv[2] + '/' + p + '\n')
-            fn.write(pdir + ' ' + sys.argv[2] + '/' + p + '\n')
+        if tag == 'a' and p is not None and p.startswith('http') and p.endswith('tgz'):
+            #print "File:", tag, aattrs
+            fn.write('wget -N ' + p + '\n')
     def handle_endtag(self, tag):
-        global in_repository
-        in_repository = False
         pass
         #print "Encountered an end tag :", tag
     def handle_data(self, data):
         pass
         #print "Encountered some data  :", data
 
-if len(sys.argv) != 3:
-    print('sitecopy.py <httpurlname> <giturlname>')
+if len(sys.argv) != 2:
+    print('getfiles.py <httpurlname>')
     sys.exit(1)
 tempfilename = 'xx.sitecopy.tempfile'
 fn = open(tempfilename, 'w')
 in_repository = False
 MyHTMLParser().feed(urllib2.urlopen(sys.argv[1]).read())
 fn.close()
-thread_limit = 20 //10 //15 //20 //40
-gitclone.main(False, tempfilename, False, thread_limit, 4000)
+subprocess.call('sh -x ' + tempfilename, shell=True)
 #os.remove(tempfilename)
